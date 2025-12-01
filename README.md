@@ -29,7 +29,7 @@ make clean
 
 ### Advanced Configuration
 
-Edit `image_filter_baseline.cpp` to change:
+Edit `proj.cpp` to change:
 ```cpp
 // Line ~320
 int width = 4096;       // Image width (try: 1024, 2048, 4096, 8192)
