@@ -471,6 +471,21 @@ int main(int argc, char* argv[]) {
     cout << "Gaussian Filter (SIMD Auto):    " << gauss_auto_time << " s  (speedup: " 
          << serial_gauss_time/gauss_auto_time << "x)" << endl;
     
+    cout << "\n=== BOX FILTER - SLIDING WINDOW OPTIMIZATION ===" << endl;
+    double box_sliding_time = measure_time([&]() {
+        Image result = box_filter_sliding_window(input, kernel_size);
+    });
+    cout << "Box Filter (Sliding Window):    " << box_sliding_time << " s  (speedup: " 
+         << serial_box_time/box_sliding_time << "x)" << endl;
+    cout << "  Note: Uses sliding window to reduce complexity from O(k^2) to O(k) per pixel" << endl;
+    
+    double box_simd_sliding_time = measure_time([&]() {
+        Image result = box_filter_simd_sliding_window(input, kernel_size);
+    });
+    cout << "Box Filter (SIMD + Sliding):    " << box_simd_sliding_time << " s  (speedup: " 
+         << serial_box_time/box_simd_sliding_time << "x)" << endl;
+    cout << "  Note: Combines SIMD vectorization with sliding window optimization" << endl;
+    
     cout << "\nNote: Run with 'export OMP_NUM_THREADS=X' to change thread count" << endl;
 
     cout << "\n=== STAGE 3: CACHE OPTIMIZATION (TILING) ===" << endl;
