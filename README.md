@@ -42,3 +42,38 @@ Then rebuild:
 ```bash
 make clean && make
 ```
+
+## Testing
+
+### Quick Test
+Run a quick test with different configurations:
+```bash
+./quick_test.sh
+```
+
+### Comprehensive Testing
+Run full test suite (tests different thread counts, image sizes, and kernel sizes):
+```bash
+./test_all.sh
+```
+
+Test results will be saved in `test_results/` directory.
+
+### Manual Testing
+```bash
+# Test with specific parameters: threads width height kernel_size
+./image_filter 4 2048 2048 7
+
+# All implementations are automatically verified for correctness
+# Look for [OK] or [FAIL] markers in the output
+```
+
+See [TESTING.md](TESTING.md) for detailed testing documentation.
+
+## Features
+
+- ✅ Serial baseline implementations
+- ✅ OpenMP parallelization (static, dynamic, guided scheduling)
+- ✅ SIMD vectorization (manual AVX2 and compiler auto-vectorization)
+- ✅ Automatic correctness verification
+- ✅ Performance benchmarking and reporting

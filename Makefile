@@ -1,6 +1,6 @@
 # Compiler Settings
 CXX = g++
-CXXFLAGS = -std=c++11 -O2 -Wall -fopenmp
+CXXFLAGS = -std=c++11 -O3 -Wall -fopenmp -mavx2 -mfma -march=native
 
 # Targets
 ORIG_TARGET = image_filter
@@ -9,12 +9,12 @@ PROF_TARGET = profiler
 # Valgrind Command (Quiet output to stdio, log to file)
 VALGRIND_CMD = valgrind --tool=cachegrind --branch-sim=yes --cache-sim=yes
 
-# Default
+# Default: Build both targets
 all: $(ORIG_TARGET) $(PROF_TARGET)
 
-# Build Original
-$(ORIG_TARGET): proj.cpp
-	$(CXX) $(CXXFLAGS) proj.cpp -o $(ORIG_TARGET)
+# Build Original (with SIMD support)
+$(ORIG_TARGET): proj.cpp simd_filters.cpp
+	$(CXX) $(CXXFLAGS) proj.cpp simd_filters.cpp -o $(ORIG_TARGET)
 
 # Build Profiler
 $(PROF_TARGET): profiler.cpp proj.cpp
@@ -68,6 +68,6 @@ profile_cache: $(PROF_TARGET)
 	 echo "Detailed logs saved to: stage2_report.txt, stage3_report.txt"
 
 clean:
-	rm -f $(ORIG_TARGET) $(PROF_TARGET) *.txt cachegrind.out.*
+	rm -f $(ORIG_TARGET) $(PROF_TARGET) *.txt cachegrind.out.* *.o
 
 .PHONY: all benchmark profile_cache clean
