@@ -4,22 +4,11 @@
 #include <cmath>
 #include <cstdlib>
 #include <omp.h>
+#include <immintrin.h>  // AVX2 intrinsics for SIMD
+#include "image_struct.h"  // Image structure
+#include "simd_filters.h"  // SIMD function declarations
 
 using namespace std;
-
-// ============================================================================
-// IMAGE STRUCTURE
-// ============================================================================
-struct Image {
-    int width;
-    int height;
-    vector<float> data;
-    
-    Image(int w, int h) : width(w), height(h), data(w * h, 0.0f) {}
-    
-    float& at(int x, int y) { return data[y * width + x]; }
-    const float& at(int x, int y) const { return data[y * width + x]; }
-};
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -36,36 +25,7 @@ Image create_test_image(int width, int height) {
     return img;
 }
 
-// Generate Gaussian kernel
-vector<float> create_gaussian_kernel(int size, float sigma) {
-    vector<float> kernel(size * size);
-    int radius = size / 2;
-    float sum = 0.0f;
-    
-    for (int y = 0; y < size; y++) {
-        for (int x = 0; x < size; x++) {
-            int dx = x - radius;
-            int dy = y - radius;
-            float value = exp(-(dx*dx + dy*dy) / (2.0f * sigma * sigma));
-            kernel[y * size + x] = value;
-            sum += value;
-        }
-    }
-    
-    // Normalize
-    for (int i = 0; i < size * size; i++) {
-        kernel[i] /= sum;
-    }
-    
-    return kernel;
-}
-
-// Clamp value to range
-inline int clamp(int value, int min, int max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}
+// Note: clamp() and create_gaussian_kernel() are now in image_struct.h
 
 // Measure execution time
 template<typename Func>
@@ -387,6 +347,48 @@ int main(int argc, char* argv[]) {
     });
     cout << "Gaussian Filter (OpenMP Guided): " << gauss_guided_time << " s  (speedup: " 
          << serial_gauss_time/gauss_guided_time << "x)" << endl;
+    
+    // ========================================================================
+    // SIMD IMPLEMENTATIONS
+    // ========================================================================
+    cout << "\n=== SIMD - MANUAL VECTORIZATION (AVX2) ===" << endl;
+    double box_simd_time = measure_time([&]() {
+        Image result = box_filter_simd(input, kernel_size);
+    });
+    cout << "Box Filter (SIMD Manual):        " << box_simd_time << " s  (speedup: " 
+         << serial_box_time/box_simd_time << "x)" << endl;
+    
+    double gauss_simd_time = measure_time([&]() {
+        Image result = gaussian_filter_simd(input, kernel_size, sigma);
+    });
+    cout << "Gaussian Filter (SIMD Manual):   " << gauss_simd_time << " s  (speedup: " 
+         << serial_gauss_time/gauss_simd_time << "x)" << endl;
+    
+    cout << "\n=== SIMD - OPTIMIZED VERSION ===" << endl;
+    double box_simd_opt_time = measure_time([&]() {
+        Image result = box_filter_simd_optimized(input, kernel_size);
+    });
+    cout << "Box Filter (SIMD Optimized):    " << box_simd_opt_time << " s  (speedup: " 
+         << serial_box_time/box_simd_opt_time << "x)" << endl;
+    
+    double gauss_simd_opt_time = measure_time([&]() {
+        Image result = gaussian_filter_simd_optimized(input, kernel_size, sigma);
+    });
+    cout << "Gaussian Filter (SIMD Optimized): " << gauss_simd_opt_time << " s  (speedup: " 
+         << serial_gauss_time/gauss_simd_opt_time << "x)" << endl;
+    
+    cout << "\n=== SIMD - COMPILER AUTO-VECTORIZATION ===" << endl;
+    double box_auto_time = measure_time([&]() {
+        Image result = box_filter_openmp_simd_auto(input, kernel_size);
+    });
+    cout << "Box Filter (SIMD Auto):         " << box_auto_time << " s  (speedup: " 
+         << serial_box_time/box_auto_time << "x)" << endl;
+    
+    double gauss_auto_time = measure_time([&]() {
+        Image result = gaussian_filter_openmp_simd_auto(input, kernel_size, sigma);
+    });
+    cout << "Gaussian Filter (SIMD Auto):    " << gauss_auto_time << " s  (speedup: " 
+         << serial_gauss_time/gauss_auto_time << "x)" << endl;
     
     cout << "\nNote: Run with 'export OMP_NUM_THREADS=X' to change thread count" << endl;
     

@@ -1,12 +1,13 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -O2 -Wall -fopenmp
+CXXFLAGS = -std=c++11 -O3 -Wall -fopenmp -mavx2 -mfma -march=native
 
 TARGET = image_filter
 
+# Build with proj.cpp and simd_filters.cpp
 all: $(TARGET)
 
-$(TARGET): proj.cpp
-	$(CXX) $(CXXFLAGS) proj.cpp -o $(TARGET)
+$(TARGET): proj.cpp simd_filters.cpp
+	$(CXX) $(CXXFLAGS) proj.cpp simd_filters.cpp -o $(TARGET)
 	@echo ""
 	@echo "Build complete!"
 	@echo ""
@@ -19,6 +20,6 @@ run: $(TARGET)
 	./$(TARGET)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) *.o
 
 .PHONY: all run clean
