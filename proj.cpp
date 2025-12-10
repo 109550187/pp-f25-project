@@ -488,6 +488,10 @@ int main(int argc, char* argv[]) {
     
     cout << "\nNote: Run with 'export OMP_NUM_THREADS=X' to change thread count" << endl;
 
+    // ========================================================================
+    // SIMD + Tiled IMPLEMENTATIONS
+    // ========================================================================
+    
     cout << "\n=== STAGE 3: CACHE OPTIMIZATION (TILING) ===" << endl;
     
     double box_tiled_time = measure_time([&]() {
@@ -501,7 +505,60 @@ int main(int argc, char* argv[]) {
     });
     cout << "Gaussian Filter (Tiled):       " << gauss_tiled_time << " s  (speedup: " 
          << serial_gauss_time/gauss_tiled_time << "x)" << endl;
-          
+         
+    cout << "\n=== SIMD - MANUAL VECTORIZATION (AVX2) + Tiled ===" << endl;
+    double box_simd_time_tiled = measure_time([&]() {
+        Image result = box_filter_simd_tiled(input, kernel_size);
+    });
+    cout << "Box Filter (SIMD Manual + Tiled):        " << box_simd_time_tiled << " s  (speedup: " 
+         << serial_box_time/box_simd_time_tiled << "x)" << endl;
+    
+    double gauss_simd_time_tiled = measure_time([&]() {
+        Image result = gaussian_filter_simd_tiled(input, kernel_size, sigma);
+    });
+    cout << "Gaussian Filter (SIMD Manual + Tiled):   " << gauss_simd_time_tiled << " s  (speedup: " 
+         << serial_gauss_time/gauss_simd_time_tiled << "x)" << endl;
+    
+    cout << "\n=== SIMD - OPTIMIZED VERSION + Tiled ===" << endl;
+    double box_simd_opt_time_tiled = measure_time([&]() {
+        Image result = box_filter_simd_optimized_tiled(input, kernel_size);
+    });
+    cout << "Box Filter (SIMD Optimized + Tiled):    " << box_simd_opt_time_tiled << " s  (speedup: " 
+         << serial_box_time/box_simd_opt_time_tiled << "x)" << endl;
+    
+    double gauss_simd_opt_time_tiled = measure_time([&]() {
+        Image result = gaussian_filter_simd_optimized_tiled(input, kernel_size, sigma);
+    });
+    cout << "Gaussian Filter (SIMD Optimized + Tiled): " << gauss_simd_opt_time_tiled << " s  (speedup: " 
+         << serial_gauss_time/gauss_simd_opt_time_tiled << "x)" << endl;
+    
+    cout << "\n=== SIMD - COMPILER AUTO-VECTORIZATION + Tiled ===" << endl;
+    double box_auto_time_tiled = measure_time([&]() {
+        Image result = box_filter_openmp_simd_auto_tiled(input, kernel_size);
+    });
+    cout << "Box Filter (SIMD Auto + Tiled):         " << box_auto_time_tiled << " s  (speedup: " 
+         << serial_box_time/box_auto_time_tiled << "x)" << endl;
+    
+    double gauss_auto_time_tiled = measure_time([&]() {
+        Image result = gaussian_filter_openmp_simd_auto_tiled(input, kernel_size, sigma);
+    });
+    cout << "Gaussian Filter (SIMD Auto + Tiled):    " << gauss_auto_time_tiled << " s  (speedup: " 
+         << serial_gauss_time/gauss_auto_time_tiled << "x)" << endl;
+    
+    cout << "\n=== BOX FILTER - SLIDING WINDOW OPTIMIZATION + Tiled ===" << endl;
+    double box_sliding_time_tiled = measure_time([&]() {
+        Image result = box_filter_sliding_window_tiled(input, kernel_size);
+    });
+    cout << "Box Filter (Sliding Window + Tiled):    " << box_sliding_time_tiled << " s  (speedup: " 
+         << serial_box_time/box_sliding_time_tiled << "x)" << endl;
+    cout << "  Note: Uses sliding window to reduce complexity from O(k^2) to O(k) per pixel" << endl;
+    
+    double box_simd_sliding_time_tiled = measure_time([&]() {
+        Image result = box_filter_simd_sliding_window_tiled(input, kernel_size);
+    });
+    cout << "Box Filter (SIMD + Sliding + Tiled):    " << box_simd_sliding_time_tiled << " s  (speedup: " 
+         << serial_box_time/box_simd_sliding_time_tiled << "x)" << endl;
+    cout << "  Note: Combines SIMD vectorization with sliding window optimization" << endl; 
     return 0;
 }
 

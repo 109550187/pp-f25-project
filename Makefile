@@ -17,8 +17,8 @@ $(ORIG_TARGET): proj.cpp simd_filters.cpp
 	$(CXX) $(CXXFLAGS) proj.cpp simd_filters.cpp -o $(ORIG_TARGET)
 
 # Build Profiler
-$(PROF_TARGET): profiler.cpp proj.cpp
-	$(CXX) $(CXXFLAGS) profiler.cpp -o $(PROF_TARGET)
+$(PROF_TARGET): profiler.cpp proj.cpp simd_filters.cpp
+	$(CXX) $(CXXFLAGS) profiler.cpp simd_filters.cpp -o $(PROF_TARGET)
 
 # ---------------------------------------------------------
 # COMMANDS
@@ -68,6 +68,6 @@ profile_cache: $(PROF_TARGET)
 	 echo "Detailed logs saved to: stage2_report.txt, stage3_report.txt"
 
 clean:
-	rm -f $(ORIG_TARGET) $(PROF_TARGET) *.txt cachegrind.out.* *.o
+	rm -f $(ORIG_TARGET) $(PROF_TARGET) *.txt cachegrind.out.* *.o *.log
 
 .PHONY: all benchmark profile_cache clean
