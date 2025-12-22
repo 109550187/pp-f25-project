@@ -48,12 +48,14 @@ make clean && make
 ### Quick Test
 Run a quick test with different configurations:
 ```bash
+chmod +x quick_test.sh
 ./quick_test.sh
 ```
 
 ### Comprehensive Testing
 Run full test suite (tests different thread counts, image sizes, and kernel sizes):
 ```bash
+chmod +x test_all.sh
 ./test_all.sh
 ```
 
@@ -68,7 +70,6 @@ Test results will be saved in `test_results/` directory.
 # Look for [OK] or [FAIL] markers in the output
 ```
 
-See [TESTING.md](TESTING.md) for detailed testing documentation.
 
 ## Features
 
